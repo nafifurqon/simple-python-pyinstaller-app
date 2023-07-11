@@ -59,7 +59,7 @@ pipeline {
                                     sshTransfer(
                                         cleanRemote: false,
                                         excludes: '',
-                                        execCommand: 'chmod 400 add2vals; ./add2vals',
+                                        execCommand: 'ls -a',
                                         execTimeout: 120000,
                                         flatten: false,
                                         makeEmptyDirs: false,
