@@ -59,7 +59,7 @@ pipeline {
                                     sshTransfer(
                                         cleanRemote: false,
                                         excludes: '',
-                                        execCommand: "chmod a+x ${env.BUILD_ID}/sources/dist/add2vals && ./add2vals",
+                                        execCommand: "chmod a+x ${env.BUILD_ID}/sources/dist/add2vals && ./${env.BUILD_ID}/sources/dist/add2vals 10 20",
                                         execTimeout: 120000,
                                         flatten: false,
                                         makeEmptyDirs: false,
