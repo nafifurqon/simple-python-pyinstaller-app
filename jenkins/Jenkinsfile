@@ -51,9 +51,6 @@ pipeline {
                 success {
                     archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals" 
                     sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
-                    sh "ls -a ${env.BUILD_ID}/sources/dist/"
-                    sh "ls ../"
-                    sh "ssh ubuntu@ec2-3-86-196-249.compute-1.amazonaws.com"
                     sleep(60)
                 }
             }
