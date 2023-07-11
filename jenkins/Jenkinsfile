@@ -59,16 +59,16 @@ pipeline {
                                     sshTransfer(
                                         cleanRemote: false,
                                         excludes: '',
-                                        execCommand: 'chmod 400 add2vals && ./add2vals',
+                                        execCommand: 'chmod 400 add2vals; ./add2vals',
                                         execTimeout: 120000,
                                         flatten: false,
                                         makeEmptyDirs: false,
                                         noDefaultExcludes: false,
                                         patternSeparator: '[, ]+',
-                                        remoteDirectory: '/home/ubuntu',
+                                        remoteDirectory: '',
                                         remoteDirectorySDF: false,
                                         removePrefix: '',
-                                        sourceFiles: '${env.BUILD_ID}/sources/dist/add2vals'
+                                        sourceFiles: "${env.BUILD_ID}/sources/dist/*"
                                     )
                                 ],
                                 usePromotionTimestamp: false,
