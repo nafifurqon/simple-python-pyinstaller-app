@@ -51,6 +51,32 @@ pipeline {
                 success {
                     archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals" 
                     sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
+                    sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'submission-cicd-pipeline-nafifurqon-ec2',
+                                transfers: [
+                                    sshTransfer(
+                                        cleanRemote: false,
+                                        excludes: '',
+                                        execCommand: 'chmod 400 add2vals && ./add2vals',
+                                        execTimeout: 120000,
+                                        flatten: false,
+                                        makeEmptyDirs: false,
+                                        noDefaultExcludes: false,
+                                        patternSeparator: '[, ]+',
+                                        remoteDirectory: '/home/ubuntu',
+                                        remoteDirectorySDF: false,
+                                        removePrefix: '',
+                                        sourceFiles: '${env.BUILD_ID}/sources/dist/add2vals'
+                                    )
+                                ],
+                                usePromotionTimestamp: false,
+                                useWorkspaceInPromotion: false,
+                                verbose: false
+                            )
+                        ]
+                    )
                     sleep(60)
                 }
             }
