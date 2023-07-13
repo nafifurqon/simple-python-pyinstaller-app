@@ -1,85 +1,46 @@
-pipeline {
-    agent none
-    options {
-        skipStagesAfterUnstable()
+node {
+    stage('Build') {
+        docker.image('python:2-alpine').inside {
+            sh 'python -m py_compile sources/add2vals.py sources/calc.py'
+            stash(name: 'compiled-results', includes: 'sources/*.py*')
+        }
     }
-    stages {
-        stage('Build') {
-            agent {
-                docker {
-                    image 'python:2-alpine'
-                }
-            }
-            steps {
-                sh 'python -m py_compile sources/add2vals.py sources/calc.py'
-                stash(name: 'compiled-results', includes: 'sources/*.py*')
-            }
-        }
+    
+    stage('Test') {
         stage('Test') {
-            agent {
-                docker {
-                    image 'qnib/pytest'
+            try {
+                docker.image('qnib/pytest').inside {
+                    sh 'py.test --junit-xml test-reports/results.xml sources/test_calc.py'
                 }
-            }
-            steps {
-                sh 'py.test --junit-xml test-reports/results.xml sources/test_calc.py'
-            }
-            post {
-                always {
-                    junit 'test-reports/results.xml'
-                }
+            } catch (e) {
+                echo 'Failed'
+                throw e
+            } finally {
+                junit 'test-reports/results.xml'
             }
         }
-        stage('Manual Approval') {
-            steps {
-                input message: 'Lanjutkan ke tahap Deploy?'
-            }
+    }
+    
+    stage('Manual Approval') {
+        input message: 'Lanjutkan ke tahap Deploy?'
+    }
+    
+    stage('Deploy') {
+        dir("${env.BUILD_ID}") {
+            unstash(name: 'compiled-results')
+            sh "docker run --rm -v ${env.WORKSPACE}/sources:/src cdrx/pyinstaller-linux:python2 'pyinstaller -F add2vals.py'"
         }
-        stage('Deploy') { 
-            agent any
-            environment { 
-                VOLUME = '$(pwd)/sources:/src'
-                IMAGE = 'cdrx/pyinstaller-linux:python2'
-            }
-            steps {
-                dir(path: env.BUILD_ID) { 
-                    unstash(name: 'compiled-results') 
-                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F add2vals.py'" 
-                }
-            }
-            post {
-                success {
-                    archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals" 
-                    sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
-                    sshPublisher(
-                        publishers: [
-                            sshPublisherDesc(
-                                configName: 'submission-cicd-pipeline-nafifurqon-ec2',
-                                transfers: [
-                                    sshTransfer(
-                                        cleanRemote: false,
-                                        excludes: '',
-                                        execCommand: "chmod a+x ${env.BUILD_ID}/sources/dist/add2vals && ./${env.BUILD_ID}/sources/dist/add2vals 10 20",
-                                        execTimeout: 120000,
-                                        flatten: false,
-                                        makeEmptyDirs: false,
-                                        noDefaultExcludes: false,
-                                        patternSeparator: '[, ]+',
-                                        remoteDirectory: '',
-                                        remoteDirectorySDF: false,
-                                        removePrefix: '',
-                                        sourceFiles: "${env.BUILD_ID}/sources/dist/*"
-                                    )
-                                ],
-                                usePromotionTimestamp: false,
-                                useWorkspaceInPromotion: false,
-                                verbose: false
-                            )
-                        ]
-                    )
-                    sleep(60)
-                }
-            }
-        }
+        archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
+        sh "docker run --rm -v ${env.WORKSPACE}/sources:/src cdrx/pyinstaller-linux:python2 'rm -rf build dist'"
+        sshPublisher(publishers: [
+            sshPublisherDesc(configName: 'submission-cicd-pipeline-nafifurqon-ec2', transfers: [
+                sshTransfer(
+                    execCommand: "chmod a+x ${env.BUILD_ID}/sources/dist/add2vals && ./${env.BUILD_ID}/sources/dist/add2vals 10 20",
+                    execTimeout: 120000,
+                    sourceFiles: "${env.BUILD_ID}/sources/dist/*"
+                )
+            ])
+        ])
+        sleep(60)
     }
 }
