@@ -39,6 +39,7 @@ node {
         sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2"
         sh "ls"
         sh "ls ${env.BUILD_ID}/sources"
+        sh "ls ${env.BUILD_ID}/sources/dist"
         sshPublisher(
             publishers: [
                 sshPublisherDesc(
@@ -56,7 +57,7 @@ node {
                             remoteDirectory: '/home/ubuntu',
                             remoteDirectorySDF: false,
                             removePrefix: '',
-                            sourceFiles: "${env.BUILD_ID}/sources/*"
+                            sourceFiles: "${env.BUILD_ID}/sources/dist/*"
                         )
                     ],
                     usePromotionTimestamp: false,
