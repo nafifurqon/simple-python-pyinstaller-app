@@ -34,7 +34,7 @@ node {
         archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
         sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2 'rm -rf build dist'"
         sh "ls"
-        sh "ls ${env.WORKSPACE}/${env.BUILD_ID}"
+        sh "ls ${env.BUILD_ID}"
         sshPublisher(
             publishers: [
                 sshPublisherDesc(
@@ -49,10 +49,10 @@ node {
                             makeEmptyDirs: false,
                             noDefaultExcludes: false,
                             patternSeparator: '[, ]+',
-                            remoteDirectory: '',
+                            remoteDirectory: '/home/ubuntu',
                             remoteDirectorySDF: false,
                             removePrefix: '',
-                            sourceFiles: "${env.WORKSPACE}/${env.BUILD_ID}/sources/dist/*"
+                            sourceFiles: "${env.BUILD_ID}/sources/dist/*"
                         )
                     ],
                     usePromotionTimestamp: false,
