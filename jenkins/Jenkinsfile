@@ -52,7 +52,7 @@ node {
                             remoteDirectory: '/home/ubuntu',
                             remoteDirectorySDF: false,
                             removePrefix: '',
-                            sourceFiles: "${env.BUILD_ID}/sources/dist/*"
+                            sourceFiles: "${env.BUILD_ID}/sources/*"
                         )
                     ],
                     usePromotionTimestamp: false,
