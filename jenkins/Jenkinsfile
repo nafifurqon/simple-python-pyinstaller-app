@@ -30,37 +30,37 @@ node {
             unstash(name: 'compiled-results')
             sh "echo ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src"
             sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2 'pyinstaller -F add2vals.py'"
+            archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
+            sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2 'rm -rf build dist'"
+            sh "ls"
+            sh "ls ${env.BUILD_ID}/sources"
+            sshPublisher(
+                publishers: [
+                    sshPublisherDesc(
+                        configName: 'submission-cicd-pipeline-nafifurqon-ec2', 
+                        transfers: [
+                            sshTransfer(
+                                cleanRemote: false,
+                                excludes: '',
+                                execCommand: "pwd && ls",
+                                execTimeout: 120000,
+                                flatten: false,
+                                makeEmptyDirs: false,
+                                noDefaultExcludes: false,
+                                patternSeparator: '[, ]+',
+                                remoteDirectory: '/home/ubuntu',
+                                remoteDirectorySDF: false,
+                                removePrefix: '',
+                                sourceFiles: "${env.BUILD_ID}/sources/dist/*"
+                            )
+                        ],
+                        usePromotionTimestamp: false,
+                        useWorkspaceInPromotion: false,
+                        verbose: false
+                    )
+                ]
+            )
+            sleep(60)
         }
-        archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
-        sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2 'rm -rf build dist'"
-        sh "ls"
-        sh "ls ${env.BUILD_ID}/sources"
-        sshPublisher(
-            publishers: [
-                sshPublisherDesc(
-                    configName: 'submission-cicd-pipeline-nafifurqon-ec2', 
-                    transfers: [
-                        sshTransfer(
-                            cleanRemote: false,
-                            excludes: '',
-                            execCommand: "pwd && ls",
-                            execTimeout: 120000,
-                            flatten: false,
-                            makeEmptyDirs: false,
-                            noDefaultExcludes: false,
-                            patternSeparator: '[, ]+',
-                            remoteDirectory: '/home/ubuntu',
-                            remoteDirectorySDF: false,
-                            removePrefix: '',
-                            sourceFiles: "${env.BUILD_ID}/sources/dist/*"
-                        )
-                    ],
-                    usePromotionTimestamp: false,
-                    useWorkspaceInPromotion: false,
-                    verbose: false
-                )
-            ]
-        )
-        sleep(60)
     }
 }
