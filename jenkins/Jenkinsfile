@@ -28,18 +28,9 @@ node {
     stage('Deploy') {
         dir("${env.BUILD_ID}") {
             unstash(name: 'compiled-results')
-            sh "ls ${env.WORKSPACE}/${env.BUILD_ID}"
-            sh "echo ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src"
             sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2 'pyinstaller -F add2vals.py'"
         }
-        sh "ls ${env.BUILD_ID}"
         archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
-        sh "ls ${env.WORKSPACE}/${env.BUILD_ID}"
-        sh "ls ${env.BUILD_ID}/sources"
-        sh "docker run --rm -v ${env.WORKSPACE}/${env.BUILD_ID}/sources:/src cdrx/pyinstaller-linux:python2"
-        sh "ls"
-        sh "ls ${env.BUILD_ID}/sources"
-        sh "ls ${env.BUILD_ID}/sources/dist"
         sshPublisher(
             publishers: [
                 sshPublisherDesc(
@@ -48,13 +39,13 @@ node {
                         sshTransfer(
                             cleanRemote: false,
                             excludes: '',
-                            execCommand: "pwd && ls",
+                            execCommand: "chmod a+x ${env.BUILD_ID}/sources/dist/add2vals && ./${env.BUILD_ID}/sources/dist/add2vals 10 20",
                             execTimeout: 120000,
                             flatten: false,
                             makeEmptyDirs: false,
                             noDefaultExcludes: false,
                             patternSeparator: '[, ]+',
-                            remoteDirectory: '/home/ubuntu',
+                            remoteDirectory: '',
                             remoteDirectorySDF: false,
                             removePrefix: '',
                             sourceFiles: "${env.BUILD_ID}/sources/dist/*"
