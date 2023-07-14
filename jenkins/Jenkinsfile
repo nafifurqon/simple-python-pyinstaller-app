@@ -50,7 +50,7 @@ node {
                             remoteDirectory: '',
                             remoteDirectorySDF: false,
                             removePrefix: '',
-                            sourceFiles: "${env.BUILD_ID}/sources/dist/*"
+                            sourceFiles: "${env.WORKSPACE}/${env.BUILD_ID}/sources/dist/*"
                         )
                     ],
                     usePromotionTimestamp: false,
